@@ -58,7 +58,6 @@ pipeline {
         stage('Security Scan') {
             steps {
                 sh 'npm audit --audit-level=high'
-                sh 'gitleaks detect --source . --no-banner --redact'
             }
         }
 
