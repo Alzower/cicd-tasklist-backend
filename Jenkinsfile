@@ -90,7 +90,6 @@ stage('Image Scan') {
             set -e
             ./bin/trivy image \
               --exit-code 1 \
-              --severity HIGH,CRITICAL \
               --no-progress \
               ${IMAGE_NAME}:${IMAGE_TAG}
         '''
