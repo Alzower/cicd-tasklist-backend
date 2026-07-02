@@ -31,8 +31,15 @@ pipeline {
             }
             post {
                 always {
-                    junit testResults: 'reports/junit-unit.xml', allowEmptyResults: true
-                    archiveArtifacts artifacts: 'coverage/**', allowEmptyArchive: true
+                    junit 'reports/junit.xml'
+                    publishHTML(target: [
+                        allowMissing         : false,
+                        alwaysLinkToLastBuild: true,
+                        keepAll              : true,
+                        reportDir            : 'coverage',
+                        reportFiles          : 'index.html',
+                        reportName           : 'Coverage Report'
+                    ])
                 }
             }
         }
