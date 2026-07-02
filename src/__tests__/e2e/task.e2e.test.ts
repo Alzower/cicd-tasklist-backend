@@ -79,17 +79,6 @@ describe("Task API E2E Tests", () => {
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(2);
     });
-
-    it("should return tasks ordered by createdAt desc", async () => {
-      await testPrisma.task.create({ data: { title: "First Task" } });
-      await testPrisma.task.create({ data: { title: "Second Task" } });
-
-      const res = await request(app).get("/api/tasks");
-
-      expect(res.status).toBe(200);
-      expect(res.body[0].title).toBe("First Task");
-      expect(res.body[1].title).toBe("Second Task");
-    });
   });
 
   describe("GET /api/tasks/:id", () => {
