@@ -9,7 +9,6 @@ pipeline {
         IMAGE_NAME = 'ggu-tasklist-backend'
         IMAGE_TAG  = "${BUILD_NUMBER}"
         DOCKERHUB_CREDS = credentials('dockerhub-credentials')
-
     }
 
     stages {
@@ -21,7 +20,7 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build App') {
             steps {
                 sh 'npm run build'
             }
@@ -70,11 +69,23 @@ pipeline {
                 }
             }
         }
- stage('Docker Push') {
+
+        stage('Docker Build') {
             steps {
-                sh "echo ${DOCKERHUB_CREDS_PSW} | docker login -u ${DOCKERHUB_CREDS_USR} --password-stdin"
-                sh "docker push ${DOCKERHUB_CREDS_USR}/${IMAGE_NAME}:${IMAGE_TAG}"
-                sh "docker push ${DOCKERHUB_CREDS_USR}/${IMAGE_NAME}:latest"
+                sh """
+                    docker build -t ${DOCKERHUB_CREDS_USR}/${IMAGE_NAME}:${IMAGE_TAG} .
+                    docker tag ${DOCKERHUB_CREDS_USR}/${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_CREDS_USR}/${IMAGE_NAME}:latest
+                """
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                sh '''
+                    echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin
+                    docker push $DOCKERHUB_CREDS_USR/ggu-tasklist-backend:$BUILD_NUMBER
+                    docker push $DOCKERHUB_CREDS_USR/ggu-tasklist-backend:latest
+                '''
             }
             post {
                 always {
@@ -83,29 +94,25 @@ pipeline {
             }
         }
 
-stage('Install Trivy') {
-    steps {
-        sh '''
-            set -e
-            curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
-            ./bin/trivy --version
-        '''
-    }
-}
+        stage('Install Trivy') {
+            steps {
+                sh '''
+                    set -e
+                    curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+                    ./bin/trivy --version
+                '''
+            }
+        }
 
-stage('Image Scan') {
-    steps {
-        sh '''
-            set -e
-
-            ./bin/trivy image \
-              --no-progress \
-              --exit-code 0 \
-              ${IMAGE_NAME}:${IMAGE_TAG}
-        '''
-    }
-}
-
+        stage('Image Scan') {
+            steps {
+                sh '''
+                    set -e
+                    ./bin/trivy image --no-progress --exit-code 0 \
+                    ${DOCKERHUB_CREDS_USR}/${IMAGE_NAME}:${IMAGE_TAG}
+                '''
+            }
+        }
     }
 
     post {
