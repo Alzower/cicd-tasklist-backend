@@ -81,22 +81,6 @@ pipeline {
             }
         }
 
-        stage('Push & Deploy') {
-            when { branch 'main' }
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'registry-creds',
-                    usernameVariable: 'REG_USER',
-                    passwordVariable: 'REG_PASS'
-                )]) {
-                    sh '''
-                        echo "$REG_PASS" | docker login registry.example.com -u "$REG_USER" --password-stdin
-                        docker tag ${IMAGE_NAME}:${IMAGE_TAG} registry.example.com/${IMAGE_NAME}:${IMAGE_TAG}
-                        docker push registry.example.com/${IMAGE_NAME}:${IMAGE_TAG}
-                    '''
-                }
-            }
-        }
     }
 
     post {
