@@ -8,6 +8,8 @@ pipeline {
     environment {
         IMAGE_NAME = 'ggu-tasklist-backend'
         IMAGE_TAG  = "${BUILD_NUMBER}"
+        DOCKERHUB_CREDS = credentials('dockerhub-credentials')
+
     }
 
     stages {
@@ -80,7 +82,7 @@ pipeline {
                 }
             }
         }
-        
+
 stage('Install Trivy') {
     steps {
         sh '''
