@@ -68,12 +68,19 @@ pipeline {
                 }
             }
         }
-stage('Docker Build') {
-    steps {
-        sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest ."
-    }
-}
-
+ stage('Docker Push') {
+            steps {
+                sh "echo ${DOCKERHUB_CREDS_PSW} | docker login -u ${DOCKERHUB_CREDS_USR} --password-stdin"
+                sh "docker push ${DOCKERHUB_CREDS_USR}/${IMAGE_NAME}:${IMAGE_TAG}"
+                sh "docker push ${DOCKERHUB_CREDS_USR}/${IMAGE_NAME}:latest"
+            }
+            post {
+                always {
+                    sh 'docker logout'
+                }
+            }
+        }
+        
 stage('Install Trivy') {
     steps {
         sh '''
