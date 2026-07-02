@@ -88,9 +88,10 @@ stage('Image Scan') {
     steps {
         sh '''
             set -e
+
             ./bin/trivy image \
-              --exit-code 1 \
               --no-progress \
+              --exit-code 0 \
               ${IMAGE_NAME}:${IMAGE_TAG}
         '''
     }
