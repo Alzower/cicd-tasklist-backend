@@ -77,23 +77,23 @@ stage('Docker Build') {
 stage('Install Trivy') {
     steps {
         sh '''
+            set -e
             curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
-
-            # Vérification
-            ./trivy --version
+            ./bin/trivy --version
         '''
     }
 }
 
 stage('Image Scan') {
     steps {
-        sh """
-            ./trivy image \
-            --exit-code 1 \
-            --severity HIGH,CRITICAL \
-            --no-progress \
-            ${IMAGE_NAME}:${IMAGE_TAG}
-        """
+        sh '''
+            set -e
+            ./bin/trivy image \
+              --exit-code 1 \
+              --severity HIGH,CRITICAL \
+              --no-progress \
+              ${IMAGE_NAME}:${IMAGE_TAG}
+        '''
     }
 }
 
