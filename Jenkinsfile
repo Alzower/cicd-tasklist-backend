@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = 'tasklist-backend'
+        IMAGE_NAME = 'ggu-tasklist-backend'
         IMAGE_TAG  = "${BUILD_NUMBER}"
     }
 
@@ -68,18 +68,34 @@ pipeline {
                 }
             }
         }
+stage('Docker Build') {
+    steps {
+        sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest ."
+    }
+}
 
-        stage('Docker Build') {
-            steps {
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -t ${IMAGE_NAME}:latest ."
-            }
-        }
+stage('Install Trivy') {
+    steps {
+        sh '''
+            curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
 
-        stage('Image Scan') {
-            steps {
-                sh "trivy image --exit-code 1 --severity HIGH,CRITICAL --no-progress ${IMAGE_NAME}:${IMAGE_TAG}"
-            }
-        }
+            # Vérification
+            ./trivy --version
+        '''
+    }
+}
+
+stage('Image Scan') {
+    steps {
+        sh """
+            ./trivy image \
+            --exit-code 1 \
+            --severity HIGH,CRITICAL \
+            --no-progress \
+            ${IMAGE_NAME}:${IMAGE_TAG}
+        """
+    }
+}
 
     }
 
